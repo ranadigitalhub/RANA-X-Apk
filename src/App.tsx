@@ -110,9 +110,8 @@ const DEFAULT_NOTIFICATIONS: SystemNotification[] = [
 ];
 
 export const App: React.FC = () => {
-  const [showSplash, setShowSplash] = useState<boolean>(() => {
-    if (typeof window === 'undefined') return false;
-    return sessionStorage.getItem('hasSeenSplash') !== 'true';
+  const [showSplash, setShowSplash] = useState(() => {
+    return typeof window !== 'undefined' ? sessionStorage.getItem('hasSeenSplash') !== 'true' : false;
   });
   const [currentTab, setCurrentTab] = useState<TabType>('dashboard');
 
