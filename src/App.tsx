@@ -118,7 +118,7 @@ export const App: React.FC = () => {
     if (typeof window !== 'undefined' && window.sessionStorage) {
       try {
         const hasSeen = sessionStorage.getItem(SPLASH_SESSION_KEY);
-        if (hasSeen === 'true') {
+        if (hasSeen) {
           return false;
         }
       } catch (e) {
@@ -531,14 +531,16 @@ export const App: React.FC = () => {
             </ErrorBoundary>
           </main>
 
-          {/* Floating Glassmorphism-Styled Bottom Navigation Bar */}
-          <Navigation
-            currentTab={currentTab}
-            onSelectTab={(tab) => {
-              triggerHaptic(HAPTIC_PATTERNS.TAP);
-              setCurrentTab(tab);
-            }}
-          />
+          {/* Floating Glassmorphism-Styled Bottom Navigation Bar - Only rendered when splash screen is inactive */}
+          {!showSplash && (
+            <Navigation
+              currentTab={currentTab}
+              onSelectTab={(tab) => {
+                triggerHaptic(HAPTIC_PATTERNS.TAP);
+                setCurrentTab(tab);
+              }}
+            />
+          )}
 
           {/* Interactive System Notification Center */}
           <Suspense fallback={null}>

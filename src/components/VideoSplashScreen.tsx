@@ -74,7 +74,7 @@ export const VideoSplashScreen: React.FC<VideoSplashScreenProps> = ({ onComplete
       initial={{ opacity: 1, scale: 1 }}
       animate={isExiting ? { opacity: 0, scale: 1.05 } : { opacity: 1, scale: 1 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-      className="fixed inset-0 z-50 bg-black flex items-center justify-center overflow-hidden select-none"
+      className="fixed inset-0 z-[9999] bg-black flex items-center justify-center overflow-hidden select-none"
       style={{
         pointerEvents: isExiting ? 'none' : 'auto',
         willChange: 'transform, opacity',
