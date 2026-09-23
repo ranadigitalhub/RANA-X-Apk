@@ -1,0 +1,21 @@
+{
+  "background_color": "#000000",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "RANA X",
+  "orientation": "portrait",
+  "scope": "/",
+  "short_name": "RANA X",
+  "start_url": "/",
+  "theme_color": "#000000",
+  "icons": [
+    {
+      "src": "https://raw.githubusercontent.com/ranadigitalhub/rana-x-assets/main/file_00000009288820ea7099ab1282cf5f3.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "description": "RANA X - Neural Fitness & Powerlifting Training App",
+  "lang": "en"
+}
