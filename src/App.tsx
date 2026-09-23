@@ -110,9 +110,23 @@ const DEFAULT_NOTIFICATIONS: SystemNotification[] = [
 ];
 
 const ENABLE_SPLASH = true;
+const SPLASH_SESSION_KEY = 'hasSeenSplash';
 
 export const App: React.FC = () => {
-  const [showSplash, setShowSplash] = useState(ENABLE_SPLASH);
+  const [showSplash, setShowSplash] = useState(() => {
+    if (!ENABLE_SPLASH) return false;
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      try {
+        const hasSeen = sessionStorage.getItem(SPLASH_SESSION_KEY);
+        if (hasSeen === 'true') {
+          return false;
+        }
+      } catch (e) {
+        console.warn('sessionStorage check error:', e);
+      }
+    }
+    return true;
+  });
   const [currentTab, setCurrentTab] = useState<TabType>('dashboard');
 
   // Daily activity state with persistence
@@ -438,15 +452,23 @@ export const App: React.FC = () => {
   const isHardwareConnected = Boolean(wearableTelemetry.activeDevice && wearableTelemetry.activeDevice.connected);
   const hardwareDeviceName = isHardwareConnected ? wearableTelemetry.activeDevice?.name || null : null;
 
+  const handleSplashComplete = useCallback(() => {
+    if (typeof window !== 'undefined' && window.sessionStorage) {
+      try {
+        sessionStorage.setItem(SPLASH_SESSION_KEY, 'true');
+      } catch (e) {
+        console.warn('sessionStorage setItem error:', e);
+      }
+    }
+    setShowSplash(false);
+  }, []);
+
   return (
     <>
       {ENABLE_SPLASH && showSplash && (
-        <VideoSplashScreen onComplete={() => setShowSplash(false)} />
+        <VideoSplashScreen onComplete={handleSplashComplete} />
       )}
-      <div
-        className="w-full h-full min-h-screen flex flex-col flex-1"
-        style={{ transform: 'translateZ(0)' }}
-      >
+      <div className="w-full h-full min-h-screen flex flex-col flex-1">
         <PhoneFrame
           isFrameEnabled={isFrameEnabled}
           onToggleFrame={() => setIsFrameEnabled(!isFrameEnabled)}
@@ -462,7 +484,7 @@ export const App: React.FC = () => {
           />
 
           {/* Screen Router wrapped in ErrorBoundary and Suspense */}
-          <main className="flex-1 flex flex-col relative overflow-hidden" style={{ transform: 'translateZ(0)' }}>
+          <main className="flex-1 flex flex-col relative overflow-hidden">
             <ErrorBoundary fallbackTitle="Module Telemetry Error">
               <Suspense fallback={<CyberSkeletonLoader label="CALIBRATING NEURAL MODULE..." />}>
                 {currentTab === 'dashboard' && (

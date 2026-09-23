@@ -245,7 +245,7 @@ export const AiCoachScreen: React.FC<AiCoachScreenProps> = memo(({
   };
 
   return (
-    <div className="flex-1 flex flex-col h-full px-4 pb-24 select-none overflow-hidden">
+    <div className="flex-1 flex flex-col h-full px-4 pb-28 select-none overflow-hidden">
       {/* AI Coach Header */}
       <div className="py-2.5 flex items-center justify-between border-b border-white/10 flex-shrink-0">
         <div className="flex items-center gap-2.5">

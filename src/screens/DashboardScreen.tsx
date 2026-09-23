@@ -124,7 +124,7 @@ export const DashboardScreen: React.FC<DashboardScreenProps> = ({
   };
 
   return (
-    <div className="flex-1 px-4 pb-24 overflow-y-auto space-y-5 select-none">
+    <div className="flex-1 px-4 pb-28 overflow-y-auto space-y-5 select-none">
       {/* Sub-header Banner with Live Cyber Telemetry Level */}
       <div className="flex items-center justify-between pt-1">
         <div>

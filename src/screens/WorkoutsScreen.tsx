@@ -159,7 +159,7 @@ export const WorkoutsScreen: React.FC<WorkoutsScreenProps> = memo(({ onStartWork
   };
 
   return (
-    <div className="flex-1 px-4 pb-24 overflow-y-auto space-y-4 select-none">
+    <div className="flex-1 px-4 pb-28 overflow-y-auto space-y-4 select-none">
       {/* Title & Stats */}
       <div className="pt-1">
         <div className="flex items-center justify-between">

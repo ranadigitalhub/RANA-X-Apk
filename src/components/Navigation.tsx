@@ -17,11 +17,16 @@ const TABS = [
 
 export const Navigation: React.FC<NavigationProps> = memo(({ currentTab, onSelectTab }) => {
   return (
-    <div className="fixed bottom-4 left-0 right-0 max-w-md md:max-w-lg mx-auto px-4 z-40 pointer-events-none" style={{ transform: 'translateZ(0)' }}>
+    <div
+      className="fixed bottom-0 left-0 right-0 w-full z-50 pointer-events-none pb-3 pt-2 px-4 flex justify-center items-center"
+      style={{
+        paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))',
+      }}
+    >
       {/* Floating Glassmorphism-styled Bottom Tab Bar */}
       <nav
         aria-label="App Navigation"
-        className="pointer-events-auto relative px-3 py-2.5 rounded-full bg-[#121214]/80 backdrop-blur-2xl border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.8),0_0_20px_rgba(0,240,255,0.12)] flex items-center justify-between transition-all"
+        className="pointer-events-auto relative w-full max-w-md md:max-w-lg px-3 py-2 rounded-full bg-[#121214]/90 backdrop-blur-2xl border border-white/15 shadow-[0_12px_40px_rgba(0,0,0,0.85),0_0_20px_rgba(0,240,255,0.15)] flex items-center justify-between transition-all"
       >
         {/* Mirror glow subtle top specular light */}
         <div className="absolute top-0 left-1/4 right-1/4 h-[1px] bg-gradient-to-r from-transparent via-[#00F0FF]/40 to-transparent" />
