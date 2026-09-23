@@ -109,23 +109,10 @@ const DEFAULT_NOTIFICATIONS: SystemNotification[] = [
   },
 ];
 
-const ENABLE_SPLASH = true;
-const SPLASH_SESSION_KEY = 'hasSeenSplash';
-
 export const App: React.FC = () => {
-  const [showSplash, setShowSplash] = useState(() => {
-    if (!ENABLE_SPLASH) return false;
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      try {
-        const hasSeen = sessionStorage.getItem(SPLASH_SESSION_KEY);
-        if (hasSeen) {
-          return false;
-        }
-      } catch (e) {
-        console.warn('sessionStorage check error:', e);
-      }
-    }
-    return true;
+  const [showSplash, setShowSplash] = useState<boolean>(() => {
+    if (typeof window === 'undefined') return false;
+    return sessionStorage.getItem('hasSeenSplash') !== 'true';
   });
   const [currentTab, setCurrentTab] = useState<TabType>('dashboard');
 
@@ -452,95 +439,89 @@ export const App: React.FC = () => {
   const isHardwareConnected = Boolean(wearableTelemetry.activeDevice && wearableTelemetry.activeDevice.connected);
   const hardwareDeviceName = isHardwareConnected ? wearableTelemetry.activeDevice?.name || null : null;
 
-  const handleSplashComplete = useCallback(() => {
-    if (typeof window !== 'undefined' && window.sessionStorage) {
-      try {
-        sessionStorage.setItem(SPLASH_SESSION_KEY, 'true');
-      } catch (e) {
-        console.warn('sessionStorage setItem error:', e);
-      }
-    }
-    setShowSplash(false);
-  }, []);
+  if (showSplash) {
+    return (
+      <VideoSplashScreen
+        onComplete={() => {
+          sessionStorage.setItem('hasSeenSplash', 'true');
+          setShowSplash(false);
+        }}
+      />
+    );
+  }
 
   return (
-    <>
-      {ENABLE_SPLASH && showSplash && (
-        <VideoSplashScreen onComplete={handleSplashComplete} />
-      )}
-      <div className="w-full h-full min-h-screen flex flex-col flex-1">
-        <PhoneFrame
-          isFrameEnabled={isFrameEnabled}
-          onToggleFrame={() => setIsFrameEnabled(!isFrameEnabled)}
-        >
-          {/* Top Application Header with Hardware Sync & Interactive Notifications */}
-          <Header
-            currentTab={currentTab}
-            onOpenNotifications={() => setIsNotificationCenterOpen(true)}
-            onOpenHardwareSync={() => setIsWearableModalOpen(true)}
-            unreadNotificationsCount={unreadCount}
-            isHardwareConnected={isHardwareConnected}
-            hardwareDeviceName={hardwareDeviceName}
-          />
+    <div className="w-full h-full min-h-screen flex flex-col flex-1">
+      <PhoneFrame
+        isFrameEnabled={isFrameEnabled}
+        onToggleFrame={() => setIsFrameEnabled(!isFrameEnabled)}
+      >
+        {/* Top Application Header with Hardware Sync & Interactive Notifications */}
+        <Header
+          currentTab={currentTab}
+          onOpenNotifications={() => setIsNotificationCenterOpen(true)}
+          onOpenHardwareSync={() => setIsWearableModalOpen(true)}
+          unreadNotificationsCount={unreadCount}
+          isHardwareConnected={isHardwareConnected}
+          hardwareDeviceName={hardwareDeviceName}
+        />
 
-          {/* Screen Router wrapped in ErrorBoundary and Suspense */}
-          <main className="flex-1 flex flex-col relative overflow-hidden">
-            <ErrorBoundary fallbackTitle="Module Telemetry Error">
-              <Suspense fallback={<CyberSkeletonLoader label="CALIBRATING NEURAL MODULE..." />}>
-                {currentTab === 'dashboard' && (
-                  <DashboardScreen
-                    activity={activity}
-                    onQuickLogCalorie={handleQuickLogCalorie}
-                    onQuickLogMinutes={handleQuickLogMinutes}
-                    onQuickLogWater={handleQuickLogWater}
-                    onIncrementStreak={handleIncrementStreak}
-                    onUpdateActivity={handleUpdateActivity}
-                    nextWorkout={sampleWorkouts[0]}
-                    onStartWorkout={handleStartWorkout}
-                    onNavigateTab={(tab) => setCurrentTab(tab)}
-                    profile={profile}
-                  />
-                )}
+        {/* Screen Router wrapped in ErrorBoundary and Suspense */}
+        <main className="flex-1 flex flex-col relative overflow-hidden">
+          <ErrorBoundary fallbackTitle="Module Telemetry Error">
+            <Suspense fallback={<CyberSkeletonLoader label="CALIBRATING NEURAL MODULE..." />}>
+              {currentTab === 'dashboard' && (
+                <DashboardScreen
+                  activity={activity}
+                  onQuickLogCalorie={handleQuickLogCalorie}
+                  onQuickLogMinutes={handleQuickLogMinutes}
+                  onQuickLogWater={handleQuickLogWater}
+                  onIncrementStreak={handleIncrementStreak}
+                  onUpdateActivity={handleUpdateActivity}
+                  nextWorkout={sampleWorkouts[0]}
+                  onStartWorkout={handleStartWorkout}
+                  onNavigateTab={(tab) => setCurrentTab(tab)}
+                  profile={profile}
+                />
+              )}
 
-                {currentTab === 'workouts' && (
-                  <WorkoutsScreen
-                    onStartWorkout={handleStartWorkout}
-                    profile={profile}
-                  />
-                )}
+              {currentTab === 'workouts' && (
+                <WorkoutsScreen
+                  onStartWorkout={handleStartWorkout}
+                  profile={profile}
+                />
+              )}
 
-                {currentTab === 'coach' && (
-                  <AiCoachScreen
-                    initialMessages={initialChatMessages}
-                    onStartWorkoutFromCoach={handleStartWorkout}
-                    onApplyDietPlan={handleApplyDietPlan}
-                    onSaveDietToProfile={handleSaveDietToProfile}
-                    onApplyFormFix={handleApplyFormFix}
-                    onApply1RMPrediction={handleApply1RMPrediction}
-                  />
-                )}
+              {currentTab === 'coach' && (
+                <AiCoachScreen
+                  initialMessages={initialChatMessages}
+                  onStartWorkoutFromCoach={handleStartWorkout}
+                  onApplyDietPlan={handleApplyDietPlan}
+                  onSaveDietToProfile={handleSaveDietToProfile}
+                  onApplyFormFix={handleApplyFormFix}
+                  onApply1RMPrediction={handleApply1RMPrediction}
+                />
+              )}
 
-                {currentTab === 'profile' && (
-                  <ProfileScreen
-                    profile={profile}
-                    savedDietPlan={savedDietPlan}
-                    onUpdateProfile={(updated) => setProfile(updated)}
-                  />
-                )}
-              </Suspense>
-            </ErrorBoundary>
-          </main>
+              {currentTab === 'profile' && (
+                <ProfileScreen
+                  profile={profile}
+                  savedDietPlan={savedDietPlan}
+                  onUpdateProfile={(updated) => setProfile(updated)}
+                />
+              )}
+            </Suspense>
+          </ErrorBoundary>
+        </main>
 
-          {/* Floating Glassmorphism-Styled Bottom Navigation Bar - Only rendered when splash screen is inactive */}
-          {!showSplash && (
-            <Navigation
-              currentTab={currentTab}
-              onSelectTab={(tab) => {
-                triggerHaptic(HAPTIC_PATTERNS.TAP);
-                setCurrentTab(tab);
-              }}
-            />
-          )}
+        {/* Floating Glassmorphism-Styled Bottom Navigation Bar */}
+        <Navigation
+          currentTab={currentTab}
+          onSelectTab={(tab) => {
+            triggerHaptic(HAPTIC_PATTERNS.TAP);
+            setCurrentTab(tab);
+          }}
+        />
 
           {/* Interactive System Notification Center */}
           <Suspense fallback={null}>
@@ -589,7 +570,6 @@ export const App: React.FC = () => {
           )}
         </PhoneFrame>
       </div>
-    </>
   );
 };
 
