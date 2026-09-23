@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "app.vercel.rana_x_apk.twa",
+    "sha256_cert_fingerprints": ["9F:5A:D1:D7:A2:15:40:55:C4:97:A6:4E:25:44:AF:6B:D8:14:8D:7E:B0:17:29:C3:7C:BD:26:FA:8A:22:B3:B5"]
+  }
+}]

@@ -163,3 +163,12 @@ body {
   will-change: transform, opacity;
 }
 
+/* Standalone / Installed PWA / TWA / APK Mode Styles */
+@media all and (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui) {
+  .web-preview-header,
+  header.web-preview-header {
+    display: none !important;
+  }
+}
+
+

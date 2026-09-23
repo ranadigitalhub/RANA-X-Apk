@@ -19,7 +19,7 @@ export const PhoneFrame: React.FC<PhoneFrameProps> = ({
       <div className="fixed bottom-[-10%] right-[-10%] w-[500px] h-[500px] rounded-full bg-[#FF1744]/5 blur-[120px] pointer-events-none" />
 
       {/* Frame Mode Switcher for Desktop / Web Preview */}
-      <header className="w-full flex items-center justify-between py-2.5 px-4 sm:px-6 bg-[#0E0E14]/90 backdrop-blur-xl border-b border-white/10 z-50">
+      <header className="web-preview-header w-full flex items-center justify-between py-2.5 px-4 sm:px-6 bg-[#0E0E14]/90 backdrop-blur-xl border-b border-white/10 z-50">
         <div className="flex items-center gap-2">
           <span className="w-2.5 h-2.5 rounded-full bg-[#00F0FF] shadow-[0_0_8px_#00F0FF]" />
           <span className="text-xs font-black tracking-widest text-white uppercase font-sans">
