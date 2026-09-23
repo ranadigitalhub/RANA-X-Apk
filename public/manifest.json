@@ -1,21 +1,27 @@
 {
-  "background_color": "#000000",
-  "dir": "ltr",
-  "display": "standalone",
   "name": "RANA X",
-  "orientation": "portrait",
-  "scope": "/",
   "short_name": "RANA X",
+  "description": "RANA X - Neural Fitness & Powerlifting Training App",
   "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#000000",
   "theme_color": "#000000",
+  "dir": "ltr",
+  "lang": "en",
   "icons": [
     {
-      "src": "https://raw.githubusercontent.com/ranadigitalhub/rana-x-assets/main/file_00000009288820ea7099ab1282cf5f3.png",
+      "src": "/icon-192.png",
+      "sizes": "192x192",
       "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
       "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
-  ],
-  "description": "RANA X - Neural Fitness & Powerlifting Training App",
-  "lang": "en"
+  ]
 }
