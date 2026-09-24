@@ -322,7 +322,7 @@ export const NutriLensModal: React.FC<NutriLensModalProps> = ({
             {analysisComplete && !isAnalyzing && isError && (
               <View style={styles.errorCard}>
                 <Text style={styles.errorText}>
-                  ⚠️ NON-FOOD ITEM DETECTED. Please scan a valid biological meal.
+                  ⚠️ No valid food detected. Please scan a food item.
                 </Text>
               </View>
             )}

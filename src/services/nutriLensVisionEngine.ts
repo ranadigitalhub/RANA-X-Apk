@@ -6,20 +6,38 @@
 import { compressImage } from '../utils/imageCompressor';
 
 export const NUTRI_LENS_SYSTEM_PROMPT = `You are RANA X Nutri-Lens, an elite computer vision and clinical dietitian AI.
-Your mission is to perform visual meal analysis and macronutrient estimation with maximum clinical precision.
+Your first and most critical priority is strict validation of whether the input image contains actual, consumable human food or beverages.
 
-FOOD VALIDATION RULES:
-1. WIDE SPECTRUM FOOD RECOGNITION:
-   - Identify any consumable human food, meal, dish, beverage, or snack.
-   - COMPOSITE MEALS & THALIS: Indian thalis, platters, bento boxes, mezze, buffets, combo meals, stews, curries, lentils (dal), rice, flatbreads (roti, chapati, naan, paratha, puri), sabzi, paneer, raita, curd, chutneys, and sauces are ALL VALID FOOD.
-   - TABLEWARE & AMBIENCE: Do NOT classify an image as non-food simply because it is served on stainless steel plates (thali plates), katori bowls, metal platters, plastic trays, dining tables, or accompanied by spoons, forks, or glasses. If edible food is visible, it IS food.
-2. NON-FOOD CRITERIA:
-   - Only return isFood: false if the image contains ZERO edible items (e.g. gym weights, dumbbells, shoes, clothing, furniture, electronic screens, tools, animals).
+MANDATORY VALIDATION INSTRUCTIONS:
+Step 1: Strictly analyze if the image contains real, edible food or drink.
+- NON-FOOD DETECTION:
+  If the image shows a human hand, fingers, skin, arm, face, body parts, gym equipment (dumbbells, barbells, weight plates), clothes, electronics (smartphones, laptops, monitors), tools, animals, furniture, or any other non-edible object WITHOUT recognizable food:
+  • You MUST set "isFood": false
+  • You MUST set "error_message": "No valid food detected. Please scan a food item."
+  • You MUST set "calories": 0
+  • You MUST set "protein": 0
+  • You MUST set "carbs": 0
+  • You MUST set "fats": 0
+  • You MUST set "fiber": 0
+  • You MUST set "vitaminA": 0
+  • You MUST set "vitaminC": 0
+  • You MUST set "calcium": 0
+  • You MUST set "iron": 0
+  • You MUST set "foodName": "Non-Food Item"
+  • You MUST set "detectedItems": []
+  • NEVER invent or hallucinate calories or macronutrients for human body parts or non-food objects.
+
+- FOOD DETECTION:
+  If and ONLY IF the image contains valid, consumable food or drink (including composite meals, Indian thalis, platters, curries, lentils, rice, flatbreads, fruits, salads, snacks, protein shakes, or plated dishes on stainless steel, ceramic, or paper plates):
+  • Set "isFood": true
+  • Set "error_message": ""
+  • Calculate accurate total calories, protein (g), carbs (g), fats (g), fiber (g), and key micronutrients.
 
 OUTPUT FORMAT:
-Return strictly a valid JSON object matching this schema (no conversational filler, no markdown wrappers):
+Return strictly a valid JSON object matching this schema (no conversational text, no markdown wrappers):
 {
   "isFood": boolean,
+  "error_message": string,
   "foodName": string,
   "mealType": string,
   "confidence": number,
@@ -121,12 +139,13 @@ export async function fileToBase64(file: File | Blob | string): Promise<{ base64
 export function analyzeOfflineMeal(filename: string = '', fileSize: number = 0): NutriLensAnalysisResult {
   const lower = filename.toLowerCase();
 
-  // Strict non-food keywords (removed 'metal', 'table', 'bottle' to prevent thali false positives)
+  // Strict non-food keywords including human hands, fingers, body parts, selfies, electronics, etc.
   const nonFoodKeywords = [
+    'hand', 'finger', 'palm', 'arm', 'body', 'face', 'selfie', 'person', 'skin', 'human',
     'dumbbell', 'barbell', 'kettlebell', 'gym', 'shoe', 'sneaker', 'shirt', 'pant',
     'laptop', 'macbook', 'car', 'vehicle', 'dog', 'cat', 'phone', 'smartphone',
     'screen', 'monitor', 'keyboard', 'watch', 'clock', 'wrench', 'screwdriver',
-    'notfood', 'non_food', 'nonfood', 'hardware'
+    'notfood', 'non_food', 'nonfood', 'hardware', 'room', 'desk', 'wall', 'floor'
   ];
 
   const isNonFoodMatch = nonFoodKeywords.some((kw) => lower.includes(kw));
@@ -134,7 +153,7 @@ export function analyzeOfflineMeal(filename: string = '', fileSize: number = 0):
   if (isNonFoodMatch) {
     return {
       isFood: false,
-      errorMessage: '⚠️ Non-Food Item Detected. Please scan a valid biological meal matrix.',
+      errorMessage: 'No valid food detected. Please scan a food item.',
     };
   }
 
@@ -352,7 +371,7 @@ export async function executeNutriLensAnalysis(
                 role: 'user',
                 parts: [
                   {
-                    text: 'Identify all food in this image. Note: It may be an Indian thali, composite platter, rice and curry, roti, or plated meal on steel or ceramic dishes. Calculate exact total calories, protein (g), carbs (g), fats (g), fiber (g), and key micronutrients. Return strictly valid JSON.',
+                    text: 'Strictly validate if this image contains consumable food or beverages. If it shows a human hand, fingers, skin, face, gym equipment, or non-food item, return isFood: false, error_message: "No valid food detected. Please scan a food item.", and leave all calories and macros at 0. If it contains real edible food, return isFood: true and estimate exact calories, protein (g), carbs (g), fats (g), fiber (g), and micronutrients. Return strictly valid JSON.',
                   },
                   {
                     inlineData: {
@@ -426,18 +445,23 @@ export async function executeNutriLensAnalysis(
           }
 
           if (parsed) {
-            // Check if explicitly non-food with ZERO calories/protein
-            const isNonFood =
-              parsed.isFood === false &&
-              !parsed.calories &&
-              !parsed.totalCalories &&
-              !parsed.protein &&
-              !parsed.proteinGrams;
+            // Check validation flag isFood or error_message or zero-macros non-food condition
+            const isFoodBool = parsed.isFood === true || parsed.is_food === true;
+            const isNonFoodExplicit =
+              parsed.isFood === false ||
+              parsed.is_food === false ||
+              (parsed.error_message && parsed.error_message.trim().length > 0) ||
+              (parsed.errorMessage && parsed.errorMessage.trim().length > 0) ||
+              (Number(parsed.calories || parsed.totalCalories) === 0 && Number(parsed.protein || parsed.proteinGrams) === 0 && !isFoodBool);
 
-            if (isNonFood) {
+            if (isNonFoodExplicit || !isFoodBool) {
+              const errorMsg =
+                parsed.error_message ||
+                parsed.errorMessage ||
+                'No valid food detected. Please scan a food item.';
               return {
                 isFood: false,
-                errorMessage: '⚠️ Non-Food Item Detected. Please scan a valid biological meal matrix.',
+                errorMessage: errorMsg,
                 rawResponse: rawText,
               };
             }

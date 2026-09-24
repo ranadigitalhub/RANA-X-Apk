@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Camera, Image as ImageIcon, Loader2, Sparkles, ShieldCheck } from 'lucide-react';
+import { X, Camera, Image as ImageIcon, Loader2, Sparkles, ShieldCheck, AlertTriangle } from 'lucide-react';
 import { compressImage } from '../utils/imageCompressor';
 import { executeNutriLensAnalysis, NutriLensAnalysisResult } from '../services/nutriLensVisionEngine';
 
@@ -35,6 +35,7 @@ export const NutriLensModal: React.FC<NutriLensModalProps> = ({
   const [isAnalyzing, setIsAnalyzing] = useState<boolean>(false);
   const [analysisComplete, setAnalysisComplete] = useState<boolean>(false);
   const [isError, setIsError] = useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = useState<string>('No valid food detected. Please scan a food item.');
   const [macroData, setMacroData] = useState<MacroData | null>(null);
   const [statusMessage, setStatusMessage] = useState<string>('ANALYZING OPTICAL DATA...');
 
@@ -48,6 +49,7 @@ export const NutriLensModal: React.FC<NutriLensModalProps> = ({
     setImageUri('https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=600&q=80');
     setIsAnalyzing(false);
     setIsError(false);
+    setErrorMessage('');
     setAnalysisComplete(true);
     setMacroData({
       foodName: name,
@@ -68,6 +70,7 @@ export const NutriLensModal: React.FC<NutriLensModalProps> = ({
     setIsAnalyzing(true);
     setAnalysisComplete(false);
     setIsError(false);
+    setErrorMessage('');
     setMacroData(null);
     setStatusMessage('ANALYZING OPTICAL DATA...');
 
@@ -84,6 +87,7 @@ export const NutriLensModal: React.FC<NutriLensModalProps> = ({
 
       if (!result.isFood) {
         setIsError(true);
+        setErrorMessage(result.errorMessage || 'No valid food detected. Please scan a food item.');
         setMacroData(null);
       } else {
         setMacroData({
@@ -102,10 +106,12 @@ export const NutriLensModal: React.FC<NutriLensModalProps> = ({
           rateLimitNotice: result.rateLimitNotice,
         });
         setIsError(false);
+        setErrorMessage('');
       }
     } catch (err: any) {
       console.error('Vision analysis error:', err);
       setIsError(true);
+      setErrorMessage('No valid food detected. Please scan a food item.');
       setMacroData(null);
     } finally {
       setIsAnalyzing(false);
@@ -125,6 +131,7 @@ export const NutriLensModal: React.FC<NutriLensModalProps> = ({
     setIsAnalyzing(false);
     setAnalysisComplete(false);
     setIsError(false);
+    setErrorMessage('No valid food detected. Please scan a food item.');
     setMacroData(null);
     onClose();
   };
@@ -226,10 +233,34 @@ export const NutriLensModal: React.FC<NutriLensModalProps> = ({
 
           {/* Non-Food Error UI (When isError === true) */}
           {analysisComplete && !isAnalyzing && isError && (
-            <div className="p-5 rounded-2xl bg-[#160507] border-2 border-[#FF003C] shadow-[0_0_25px_rgba(255,0,60,0.35)] flex items-center justify-center text-center animate-in fade-in zoom-in-95 duration-300">
-              <p className="text-sm font-black text-[#FF003C] tracking-wide leading-relaxed font-mono drop-shadow-[0_0_8px_rgba(255,0,60,0.7)]">
-                ⚠️ NON-FOOD ITEM DETECTED. Please scan a valid biological meal.
-              </p>
+            <div className="p-5 rounded-2xl bg-[#160507] border-2 border-[#FF003C] shadow-[0_0_25px_rgba(255,0,60,0.35)] flex flex-col items-center justify-center text-center space-y-3 animate-in fade-in zoom-in-95 duration-300">
+              <div className="w-12 h-12 rounded-full bg-[#FF003C]/15 border border-[#FF003C]/40 flex items-center justify-center text-[#FF003C] shadow-[0_0_15px_rgba(255,0,60,0.3)]">
+                <AlertTriangle size={24} />
+              </div>
+              <div className="space-y-1">
+                <h4 className="text-sm font-black text-[#FF003C] tracking-wide font-mono uppercase drop-shadow-[0_0_8px_rgba(255,0,60,0.7)]">
+                  NO VALID FOOD DETECTED
+                </h4>
+                <p className="text-xs text-neutral-300 font-medium leading-relaxed max-w-xs">
+                  {errorMessage || 'No valid food detected. Please scan a food item.'}
+                </p>
+              </div>
+              <div className="pt-2 flex gap-2 w-full max-w-xs">
+                <button
+                  type="button"
+                  onClick={() => cameraInputRef.current?.click()}
+                  className="flex-1 py-2.5 px-3 rounded-xl bg-[#00F0FF]/15 border border-[#00F0FF]/50 text-[#00F0FF] text-xs font-bold font-mono tracking-wider hover:bg-[#00F0FF]/25 active:scale-95 transition-all"
+                >
+                  SCAN AGAIN
+                </button>
+                <button
+                  type="button"
+                  onClick={() => galleryInputRef.current?.click()}
+                  className="flex-1 py-2.5 px-3 rounded-xl bg-white/10 border border-white/20 text-white text-xs font-bold font-mono tracking-wider hover:bg-white/20 active:scale-95 transition-all"
+                >
+                  CHOOSE PHOTO
+                </button>
+              </div>
             </div>
           )}
 
